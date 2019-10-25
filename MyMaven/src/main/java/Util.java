@@ -30,31 +30,39 @@ public class Util {
     }
 
 
-    public User createUser() {
+    public User createUser() throws SQLException {
         User user = new User();
         System.out.println("Введите логин:");
         String login = getScanner().nextLine();
-        String checkLogin = "SELECT * FROM USER WHERE login='" + login + "';";
-        Statement statement = null;
-        try {
-            statement = getConnection().createStatement();
-            ResultSet resultSet = statement.executeQuery(checkLogin);
-            boolean flag = true;
-            while (flag) {
+        boolean flag1 = true;
+        while (flag1) {
+            String checkLogin = "SELECT * FROM USER WHERE login='" + login + "';";
+            Statement statement = null;
+            try {
+                statement = getConnection().createStatement();
+                ResultSet resultSet = statement.executeQuery(checkLogin);
                 if (resultSet.first()) {
                     String loginDB = resultSet.getString("login");
                     if (login.equals(loginDB)) {
                         System.out.println("Такой пользователь уже зарегистрирован. Попробуйте ввести другой логин");
                         login = getScanner().nextLine();
-                    } else {
-                        flag = false;
                     }
+                } else {
+                    flag1 = false;
+                    user.setLogin(login);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                if (statement != null) {
+                    statement.close();
+                }
+                if (connection != null) {
+                    connection.close();
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        user.setLogin(login);
+
         System.out.println("Введите пароль:");
         String password = getScanner().nextLine();
         user.setPassword(password);
@@ -94,8 +102,8 @@ public class Util {
         return user;
     }
 
-    public void start()  {
-        System.out.println("Добро пожаловать!\n1.Вход\n2.Регистрация");
+    public void start() {
+        System.out.println("Добро пожаловать!\n1.Вход\n2.Регистрация\n0.Выход");
         int num = getScanner().nextInt();
         switch (num) {
             case 1: {
@@ -109,14 +117,19 @@ public class Util {
             }
             case 2: {
                 UserServiceImpl user = new UserServiceImpl();
-                User user1 = createUser();
+
                 try {
+                    User user1 = createUser();
                     user.addUser(user1);
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
+                break;
             }
-            break;
+            case 0: {
+                System.out.println("Завершение работы...");
+                break;
+            }
             default: {
                 System.out.println("Неверный ввод. Попробуйте еще раз!");
                 start();
@@ -128,7 +141,7 @@ public class Util {
         String propertyValue = "";
         Properties properties = new Properties();
 
-        try(InputStream is = this.getClass().getResourceAsStream("prop.properties")) {
+        try (InputStream is = this.getClass().getResourceAsStream("prop.properties")) {
             properties.load(is);
             propertyValue = properties.getProperty(propertyName);
         } catch (IOException e) {
