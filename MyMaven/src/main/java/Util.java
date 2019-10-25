@@ -1,8 +1,6 @@
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -36,6 +34,26 @@ public class Util {
         User user = new User();
         System.out.println("Введите логин:");
         String login = getScanner().nextLine();
+        String checkLogin = "SELECT * FROM USER WHERE login='" + login + "';";
+        Statement statement = null;
+        try {
+            statement = getConnection().createStatement();
+            ResultSet resultSet = statement.executeQuery(checkLogin);
+            boolean flag = true;
+            while (flag) {
+                if (resultSet.first()) {
+                    String loginDB = resultSet.getString("login");
+                    if (login.equals(loginDB)) {
+                        System.out.println("Такой пользователь уже зарегистрирован. Попробуйте ввести другой логин");
+                        login = getScanner().nextLine();
+                    } else {
+                        flag = false;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         user.setLogin(login);
         System.out.println("Введите пароль:");
         String password = getScanner().nextLine();
@@ -65,6 +83,8 @@ public class Util {
             } else if (num == 2) {
                 user.setSex(Sex.WOMAN);
                 flag = false;
+            } else {
+                System.out.println("Введите свой пол:\n1 - М\n2 - Ж");
             }
         }
         System.out.println("Введите информацию о себе:");
@@ -74,7 +94,7 @@ public class Util {
         return user;
     }
 
-    public void start() {
+    public void start()  {
         System.out.println("Добро пожаловать!\n1.Вход\n2.Регистрация");
         int num = getScanner().nextInt();
         switch (num) {
