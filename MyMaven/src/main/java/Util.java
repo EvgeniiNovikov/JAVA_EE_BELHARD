@@ -1,13 +1,16 @@
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 import java.util.Scanner;
 
 public class Util {
 
-    private static final String HOST = "jdbc:mysql://localhost:3306/users";
-    private static final String USER = "root";
-    private static final String PASSWORD = "220028";
+    private static final String HOST = new Util().getPropertyValue("DB_HOST");
+    private static final String USER = new Util().getPropertyValue("DB_USERNAME");
+    private static final String PASSWORD = new Util().getPropertyValue("DB_PASSWORD");
 
     Connection connection;
 
@@ -99,5 +102,18 @@ public class Util {
                 start();
             }
         }
+    }
+
+    public String getPropertyValue(String propertyName) {
+        String propertyValue = "";
+        Properties properties = new Properties();
+
+        try(InputStream is = this.getClass().getResourceAsStream("prop.properties")) {
+            properties.load(is);
+            propertyValue = properties.getProperty(propertyName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return propertyValue;
     }
 }
