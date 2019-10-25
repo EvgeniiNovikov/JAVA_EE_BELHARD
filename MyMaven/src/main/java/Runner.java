@@ -2,7 +2,7 @@
 
 public class Runner {
     public static void main(String[] args) {
-        Util util = new Util();
+        UserServiceImpl util = new UserServiceImpl();
         util.start();
     }
 

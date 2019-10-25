@@ -1,97 +1,110 @@
 import java.sql.*;
 
-public class UserServiceImpl extends Util implements UserService {
 
-    Connection connection = getConnection();
+public class UserServiceImpl extends UserService {
 
-    public boolean addUser(User user) throws SQLException {
-        boolean result = false;
-        String createUser = "INSERT INTO USER (login, password, first_name, last_name, age, sex, description) VALUES" +
-                "(?, ?, ?, ?, ?, ?, ?);";
-        PreparedStatement ps = null;
-        try {
-            ps = connection.prepareStatement(createUser);
-            ps.setString(1, user.getLogin());
-            ps.setString(2, user.getPassword());
-            ps.setString(3, user.getFirstName());
-            ps.setString(4, user.getLastName());
-            ps.setInt(5, user.getAge());
-            ps.setString(6, user.getSex().name());
-            ps.setString(7, user.getDescription());
-            ps.executeUpdate();
-            result = true;
-            System.out.println("Новый пользователь добавлен.");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            if (ps != null) {
-                ps.close();
-            }
-            if (connection != null) {
-                connection.close();
+    public User createUser() throws SQLException {
+        User user = new User();
+        System.out.println("Введите логин:");
+        user.setLogin(checkUser());
+        System.out.println("Введите пароль:");
+        String password = getScanner().nextLine();
+        user.setPassword(password);
+        System.out.println("Введите имя:");
+        String firstName = getScanner().nextLine();
+        user.setFirstName(firstName);
+        System.out.println("Введите фамилию:");
+        String lastName = getScanner().nextLine();
+        user.setLastName(lastName);
+        System.out.println("Введите свой возвраст:");
+        boolean flag = true;
+        while (flag) {
+            int age = getScanner().nextInt();
+            if (age > 0 && age < 100) {
+                user.setAge(age);
+                flag = false;
             }
         }
-        return result;
+        System.out.println("Введите свой пол:\n1 - М\n2 - Ж");
+        flag = true;
+        while (flag) {
+            int num = getScanner().nextInt();
+            if (num == 1) {
+                user.setSex(Sex.MAN);
+                flag = false;
+            } else if (num == 2) {
+                user.setSex(Sex.WOMAN);
+                flag = false;
+            } else {
+                System.out.println("Введите свой пол:\n1 - М\n2 - Ж");
+            }
+        }
+        System.out.println("Введите информацию о себе:");
+        String description = getScanner().nextLine();
+        user.setDescription(description);
+        scanner.close();
+        return user;
     }
 
-    public boolean userEnter() throws SQLException {
-        boolean result = false;
-        System.out.println("Enter your login: ");
-        String login = getScanner().nextLine();
-        System.out.println("Enter your password: ");
-        String password = getScanner().nextLine();
-        String userFromUsers = "SELECT * FROM USER WHERE login='" + login + "' and password='" + password + "';";
-        Statement statement = null;
-        try {
-            statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(userFromUsers);
-            if (resultSet.first()) {
-                System.out.println("Авторизация прошла успешно");
-                info(login, password);
-                result = true;
-            } else {
-                System.out.println("Такого пользователя не существует попробуйте еще раз");
+    public void start() {
+        System.out.println("Добро пожаловать!\n1.Вход\n2.Регистрация\n0.Выход");
+        boolean flag = true;
+        int num = getScanner().nextInt();
+        switch (num) {
+            case 1: {
+                UserServiceImpl user = new UserServiceImpl();
+                try {
+                    user.userEnter();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
+            case 2: {
+                UserServiceImpl user = new UserServiceImpl();
+                try {
+                    User user1 = createUser();
+                    user.addUser(user1);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
+            case 0: {
+                System.out.println("Завершение работы...");
+                break;
+            }
+            default: {
+                System.out.println("Неверный ввод. Попробуйте еще раз!");
                 start();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            if (statement != null) {
-                statement.close();
-            }
-            if (connection != null) {
-                connection.close();
-            }
         }
-        return result;
     }
 
-    public String info(String login, String password) throws SQLException {
-        String information = "";
-        String sql = "SELECT description FROM USER WHERE login='" + login + "' and password='" + password + "';";
-        Statement statement = null;
-        try {
-            statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sql);
-            if (resultSet.first()) {
-                information = resultSet.getString("description");
-                if (information != null) {
-                    System.out.printf("Пользователь: %s - info[" + information + "]", login);
+
+    public String checkUser() {
+        String login = getScanner().nextLine();
+        boolean flag = true;
+        while (flag) {
+            String checkLogin = "SELECT * FROM USER WHERE login='" + login + "';";
+            Statement statement = null;
+            try {
+                statement = getConnection().createStatement();
+                ResultSet resultSet = statement.executeQuery(checkLogin);
+                if (resultSet.first()) {
+                    String loginDB = resultSet.getString("login");
+                    if (login.equals(loginDB)) {
+                        System.out.println("Такой пользователь уже зарегистрирован. Попробуйте ввести другой логин");
+                        login = getScanner().nextLine();
+                    }
                 } else {
-                    System.out.printf("Пользователь: %s - info[информации нет]", login);
+                    flag = false;
+
                 }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            if (statement != null) {
-                statement.close();
-            }
-            if (connection != null) {
-                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         }
-        return information;
+        return login;
     }
-
 }
