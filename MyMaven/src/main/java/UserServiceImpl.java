@@ -19,24 +19,34 @@ public class UserServiceImpl extends UserService {
         System.out.println("Введите свой возвраст:");
         boolean flag = true;
         while (flag) {
-            int age = getScanner().nextInt();
-            if (age > 0 && age < 100) {
-                user.setAge(age);
-                flag = false;
+            try {
+                int age = Integer.parseInt(getScanner().nextLine());
+                if (age > 0 && age < 100) {
+                    user.setAge(age);
+                    flag = false;
+                } else {
+                    throw new NumberFormatException();
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Неправильный ввод! Попробуйте ещё раз.");
             }
         }
         System.out.println("Введите свой пол:\n1 - М\n2 - Ж");
         flag = true;
         while (flag) {
-            int num = getScanner().nextInt();
-            if (num == 1) {
-                user.setSex(Sex.MAN);
-                flag = false;
-            } else if (num == 2) {
-                user.setSex(Sex.WOMAN);
-                flag = false;
-            } else {
-                System.out.println("Введите свой пол:\n1 - М\n2 - Ж");
+            try {
+                int num = Integer.parseInt(getScanner().nextLine());
+                if (num == 1) {
+                    user.setSex(Sex.MAN);
+                    flag = false;
+                } else if (num == 2) {
+                    user.setSex(Sex.WOMAN);
+                    flag = false;
+                } else {
+                    throw new NumberFormatException();
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Неправильный ввод! Попробуйте ещё раз.\nВведите свой пол:\n1 - М\n2 - Ж");
             }
         }
         System.out.println("Введите информацию о себе:");
@@ -47,8 +57,7 @@ public class UserServiceImpl extends UserService {
     }
 
     public void start() {
-        System.out.println("Добро пожаловать!\n1.Вход\n2.Регистрация\n0.Выход");
-        boolean flag = true;
+        System.out.println("\nДобро пожаловать!\n1.Вход\n2.Регистрация\n0.Выход");
         int num = getScanner().nextInt();
         switch (num) {
             case 1: {
@@ -58,6 +67,7 @@ public class UserServiceImpl extends UserService {
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
+                start();
                 break;
             }
             case 2: {
@@ -108,3 +118,4 @@ public class UserServiceImpl extends UserService {
         return login;
     }
 }
+

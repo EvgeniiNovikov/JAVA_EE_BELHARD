@@ -50,9 +50,9 @@ public class UserService extends DBConnection implements UserDAO {
                 info(login, password);
                 result = true;
             } else {
-                System.out.println("Такого пользователя не существует попробуйте еще раз");
-                UserServiceImpl us = new UserServiceImpl();
-                us.start();
+                System.out.println("Неправильно введен логин или пароль.");
+//                UserServiceImpl us = new UserServiceImpl();
+//                us.start();
             }
         } catch (SQLException e) {
             e.printStackTrace();
